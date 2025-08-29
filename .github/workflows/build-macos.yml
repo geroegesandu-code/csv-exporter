@@ -1,0 +1,44 @@
+name: Build macOS app (.app)
+
+on:
+  workflow_dispatch:    # poți rula manual din Actions
+  push:
+    branches: [ main ]  # rulează automat la fiecare push pe main
+
+jobs:
+  build-macos:
+    # macos-14 = Apple Silicon (ARM64). Pentru Intel folosește macos-13.
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build .app with PyInstaller
+        run: |
+          pyinstaller --windowed --onefile --name CSVExporterPro \
+            --collect-submodules pandas --collect-submodules openpyxl \
+            main.py
+          # rezultatul se află în dist/ (CSVExporterPro.app)
+
+      - name: Zip the .app (for download)
+        run: |
+          cd dist
+          ditto -c -k --sequesterRsrc --keepParent "CSVExporterPro.app" "CSVExporterPro-macOS-ARM64.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CSVExporterPro-macOS-ARM64
+          path: dist/CSVExporterPro-macOS-ARM64.zip
