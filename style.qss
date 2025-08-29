@@ -1,0 +1,20 @@
+
+QMainWindow { background: #0b1220; color: #e6e8ee; }
+QToolBar { background: #111a2e; spacing: 8px; padding: 6px; }
+QToolBar QToolButton { color: #e6e8ee; background: #1a2540; border: 1px solid #2a365c; padding: 6px 10px; border-radius: 8px; }
+QToolBar QToolButton:hover { background: #243257; }
+QStatusBar { background: #111a2e; color: #9fb0d0; }
+
+QTabBar::tab { background: #111a2e; color: #c9d4f0; padding: 8px 14px; border-top-left-radius: 8px; border-top-right-radius: 8px; margin: 2px; }
+QTabBar::tab:selected { background: #1a2540; }
+QTabWidget::pane { border-top: 2px solid #2a365c; }
+
+QLabel { color: #c9d4f0; }
+QLineEdit { background: #0f172a; color: #e6e8ee; border: 1px solid #2a365c; border-radius: 8px; padding: 6px; }
+QPushButton { background: #1a2540; color: #e6e8ee; border: 1px solid #2a365c; border-radius: 8px; padding: 8px 12px; }
+QPushButton:hover { background: #243257; }
+QCheckBox { color: #c9d4f0; }
+
+QTableView { gridline-color: #2a365c; background: #0f172a; alternate-background-color: #111a2e; color: #e6e8ee; }
+QHeaderView::section { background: #1a2540; color: #c9d4f0; padding: 6px; border: none; }
+QTableView QTableCornerButton::section { background: #1a2540; border: none; }
