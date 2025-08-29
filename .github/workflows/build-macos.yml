@@ -29,7 +29,9 @@ jobs:
         run: |
           pyinstaller --windowed --onefile --name CSVExporterPro \
             --collect-submodules pandas --collect-submodules openpyxl \
-            main.py
+            --add-data "style.qss:." \
+            main1.py
+
           # rezultatul se află în dist/ (CSVExporterPro.app)
 
       - name: Zip the .app (for download)
