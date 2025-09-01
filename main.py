@@ -271,9 +271,9 @@ class CompanyTab(QWidget):
                         s += float(money_to_csv(x))
                     except:
                         pass
-            self.total_label.setText(f"Total Amount: {s:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            self.total_label.setText(f"Total: {s:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
         except Exception:
-            self.total_label.setText("Total Amount: 0.00")
+            self.total_label.setText("Total : 0.00")
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -379,4 +379,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
