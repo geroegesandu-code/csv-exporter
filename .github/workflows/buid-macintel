@@ -19,7 +19,7 @@ jobs:
 
     env:
       APP_NAME: CSVExporterPro
-      APP_FILE: ${{ github.event.inputs.app_file || 'main.py' }}
+      APP_FILE: ${{ github.event.inputs.app_file || 'main1.py' }}
 
     steps:
       - name: Checkout
