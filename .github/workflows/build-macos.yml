@@ -1,46 +1,74 @@
-name: Build macOS app (.app)
+name: Build macOS apps (.app) - ARM & Intel
 
 on:
-  workflow_dispatch:    # poți rula manual din Actions
+  workflow_dispatch:
+    inputs:
+      app_file:
+        description: "Entry point (ex: main.py sau main1.py)"
+        required: true
+        default: "main.py"
   push:
-    branches: [ main ]  # rulează automat la fiecare push pe main
+    branches: [ main ]
 
 jobs:
-  build-macos:
-    # macos-14 = Apple Silicon (ARM64). Pentru Intel folosește macos-13.
-    runs-on: macos-14
+  build:
+    # Rulăm pe ambele arhitecturi într-o singură rulare
+    strategy:
+      matrix:
+        os: [macos-14, macos-13]  # macos-14 = Apple Silicon (ARM64), macos-13 = Intel (x86_64)
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      APP_NAME: CSVExporterPro
+      APP_FILE: ${{ github.event.inputs.app_file || 'main.py' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Show repo tree (debug)
+        run: |
+          pwd
+          ls -la
+          echo "Using entry file: $APP_FILE"
+
+      - name: Ensure entry file exists
+        run: |
+          if [ ! -f "$APP_FILE" ]; then
+            echo "ERROR: $APP_FILE not found in repo root"; exit 1;
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install deps
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip wheel
           pip install -r requirements.txt
           pip install pyinstaller
 
+      # Dacă ai style.qss separat, decomentează linia cu --add-data si las-o pe cea fără comentarii.
       - name: Build .app with PyInstaller
         run: |
-          pyinstaller --windowed --onefile --name CSVExporterPro \
-            --collect-submodules pandas --collect-submodules openpyxl \
-            --add-data "style.qss:." \
-            main1.py
-
-          # rezultatul se află în dist/ (CSVExporterPro.app)
+          PYI="pyinstaller --windowed --onefile --name \"$APP_NAME\" \
+                --collect-submodules pandas --collect-submodules openpyxl"
+          # Dacă folosești style.qss separat, scoate # de la linia următoare:
+          # PYI="$PYI --add-data \"style.qss:.\""
+          eval $PYI "$APP_FILE"
+          ls -la dist
 
       - name: Zip the .app (for download)
         run: |
           cd dist
-          ditto -c -k --sequesterRsrc --keepParent "CSVExporterPro.app" "CSVExporterPro-macOS-ARM64.zip"
+          ARCH_SUFFIX=$([ "${{ matrix.os }}" = "macos-14" ] && echo "ARM64" || echo "Intel")
+          ditto -c -k --sequesterRsrc --keepParent "${APP_NAME}.app" "${APP_NAME}-macOS-${ARCH_SUFFIX}.zip"
+          ls -la
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CSVExporterPro-macOS-ARM64
-          path: dist/CSVExporterPro-macOS-ARM64.zip
+          name: ${{ env.APP_NAME }}-macOS-${{ matrix.os == 'macos-14' && 'ARM64' || 'Intel' }}
+          path: dist/${{ env.APP_NAME }}-macOS-${{ matrix.os == 'macos-14' && 'ARM64' || 'Intel' }}.zip
