@@ -1,4 +1,4 @@
-name: Build macOS app (.app)
+name: Build macOS app
 
 on:
   workflow_dispatch:
@@ -12,7 +12,10 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-14  # ARM64 (Apple Silicon). Pentru Intel folosește macos-13
+    # Alege runnerul după arhitectura de care ai nevoie:
+    #  - macos-14 = Apple Silicon (ARM64)
+    #  - macos-13 = Intel (x86_64)
+    runs-on: macos-14
 
     env:
       APP_NAME: CSVExporterPro
@@ -34,20 +37,25 @@ jobs:
             echo "ERROR: $APP_FILE not found in repo root"; exit 1;
           fi
 
-      - name: Set up Python
+      - name: Python setup
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install deps
         run: |
-          python -m pip install --upgrade pip wheel
+          python -V
+          python -m pip install --upgrade pip wheel setuptools
           pip install -r requirements.txt
-          pip install pyinstaller
+          # Pin PyInstaller la o versiune stabilă pentru PySide6 6.6.x
+          pip install "pyinstaller==6.6.*"
 
       - name: Build .app with PyInstaller
         run: |
+          set -eux
+          # Colectăm toate hook-urile necesare pentru PySide6 + pandas + openpyxl
           pyinstaller --windowed --onefile --name "$APP_NAME" \
+            --collect-all PySide6 \
             --collect-submodules pandas --collect-submodules openpyxl \
             "$APP_FILE"
           ls -la dist
@@ -55,11 +63,11 @@ jobs:
       - name: Zip the .app (for download)
         run: |
           cd dist
-          ditto -c -k --sequesterRsrc --keepParent "${APP_NAME}.app" "${APP_NAME}-macOS-ARM64.zip"
+          ditto -c -k --sequesterRsrc --keepParent "${APP_NAME}.app" "${APP_NAME}-macOS.zip"
           ls -la
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}-macOS-ARM64
-          path: dist/${{ env.APP_NAME }}-macOS-ARM64.zip
+          name: ${{ env.APP_NAME }}-macOS
+          path: dist/${{ env.APP_NAME }}-macOS.zip
