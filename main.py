@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QCheckBox, QTableView, QStatusBar, QMenu
 )
 
-APP_NAME = "CSV Exporter Pro"
+APP_NAME = "Cinteza CSV Exporter"
 APP_VER  = "1.0"
 
 # Schema actualizată: fără "Details 4"
@@ -98,7 +98,7 @@ class PandasModel(QAbstractTableModel):
 class CompanyTab(QWidget):
     titleChanged = Signal(QWidget, str)
 
-    def __init__(self, name="Company"):
+    def __init__(self, name="Firma"):
         super().__init__()
         self.company_name = name
         self.df = pd.DataFrame(columns=COLUMNS)
@@ -111,17 +111,17 @@ class CompanyTab(QWidget):
         # Nume companie (redenumire tab via semnal)
         title_bar = QHBoxLayout()
         self.name_edit = QLineEdit(self.company_name)
-        self.name_edit.setPlaceholderText("Company name")
+        self.name_edit.setPlaceholderText("Nume Firma")
         self.name_edit.textChanged.connect(self._emit_title_change)
-        title_bar.addWidget(QLabel("Company:"))
+        title_bar.addWidget(QLabel("Firma:"))
         title_bar.addWidget(self.name_edit, 1)
         layout.addLayout(title_bar)
 
         # Calea CSV
         row = QHBoxLayout()
-        row.addWidget(QLabel("Export CSV path:"))
+        row.addWidget(QLabel("Locatie Export CSV :"))
         self.path_edit = QLineEdit()
-        self.path_edit.setPlaceholderText("Choose where to save export.csv")
+        self.path_edit.setPlaceholderText("Alege unde sa salvezi export.csv")
         row.addWidget(self.path_edit, 1)
         b = QPushButton("Browse…")
         b.clicked.connect(self.choose_path)
@@ -157,7 +157,7 @@ class CompanyTab(QWidget):
 
         # Total live
         info = QHBoxLayout()
-        self.total_label = QLabel("Total Amount: 0.00")
+        self.total_label = QLabel("Total : 0.00")
         info.addWidget(self.total_label); info.addStretch(1)
         layout.addLayout(info)
 
@@ -166,7 +166,7 @@ class CompanyTab(QWidget):
 
     def _emit_title_change(self):
         self.company_name = self.name_edit.text().strip()
-        self.titleChanged.emit(self, self.company_name or "Company")
+        self.titleChanged.emit(self, self.company_name or "Firma")
 
     def choose_path(self):
         path, _ = QFileDialog.getSaveFileName(self, "Save CSV As", self.path_edit.text() or "export.csv", "CSV (*.csv)")
@@ -177,8 +177,8 @@ class CompanyTab(QWidget):
 
     def _ctx_menu(self, pos):
         m = QMenu(self)
-        m.addAction("Add row", lambda: self.add_row(self.table.currentIndex().row() + 1))
-        m.addAction("Delete row", self.delete_selected)
+        m.addAction("Adauga rand", lambda: self.add_row(self.table.currentIndex().row() + 1))
+        m.addAction("Sterge rand", self.delete_selected)
         m.exec(self.table.viewport().mapToGlobal(pos))
 
     def add_row(self, position=None):
@@ -293,10 +293,10 @@ class MainWindow(QMainWindow):
 
         tb = QToolBar("Main")
         self.addToolBar(tb)
-        add_act  = QAction("Add Company", self, triggered=self.add_company_tab)
-        rm_act   = QAction("Remove Company", self, triggered=lambda: self.remove_tab(self.tabs.currentIndex()))
-        save_act = QAction("Save Profile…", self, triggered=self.save_profile)
-        load_act = QAction("Load Profile…", self, triggered=self.load_profile)
+        add_act  = QAction("Adauga Firma", self, triggered=self.add_company_tab)
+        rm_act   = QAction("Sterge Firma", self, triggered=lambda: self.remove_tab(self.tabs.currentIndex()))
+        save_act = QAction("Salveaza Profil…", self, triggered=self.save_profile)
+        load_act = QAction("Incarca Profil…", self, triggered=self.load_profile)
         tb.addAction(add_act); tb.addAction(rm_act); tb.addSeparator(); tb.addAction(save_act); tb.addAction(load_act)
 
         self.setStatusBar(QStatusBar())
@@ -317,7 +317,7 @@ class MainWindow(QMainWindow):
         if idx < 0:
             return
         name = self.tabs.tabText(idx)
-        if QMessageBox.question(self, "Remove company", f"Delete '{name}' tab?") == QMessageBox.Yes:
+        if QMessageBox.question(self, "Sterge Firma", f"Sterge '{name}' tab?") == QMessageBox.Yes:
             w = self.tabs.widget(idx)
             self.tabs.removeTab(idx)
             w.deleteLater()
@@ -325,7 +325,7 @@ class MainWindow(QMainWindow):
                 self.add_company_tab()
 
     def save_profile(self):
-        path, _ = QFileDialog.getSaveFileName(self, "Save Profile", "", "Profile (*.json)")
+        path, _ = QFileDialog.getSaveFileName(self, "Salveaza Profil", "", "Profil (*.json)")
         if not path:
             return
         data = []
@@ -346,14 +346,14 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Saved profile: {path}", 3000)
 
     def load_profile(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Load Profile", "", "Profile (*.json)")
+        path, _ = QFileDialog.getOpenFileName(self, "Incarca Profil", "", "Profil (*.json)")
         if not path:
             return
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         self.tabs.clear()
         for comp in data:
-            tab = CompanyTab(comp.get("name", "Company"))
+            tab = CompanyTab(comp.get("name", "Firma"))
             tab.path_edit.setText(comp.get("path", ""))
             opts = comp.get("options", {})
             tab.no_header_chk.setChecked(opts.get("no_header", True))
@@ -379,3 +379,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
