@@ -6,7 +6,7 @@ on:
       app_file:
         description: "Entry point (ex: main.py sau main1.py)"
         required: true
-        default: "main.py"
+        default: "main1.py"
   push:
     branches: [ main ]
 
